@@ -1,6 +1,7 @@
 import re
 from win32com import client
-
+from Item import Item
+from Database import Database
 class Prequotation:
 
     items = []
@@ -49,6 +50,20 @@ class Prequotation:
         rstart = self.rageStart()
         rend = self.rangeEnd()
         for r in range(rstart, rend):
+            it = Item()
+            it.setModel(self.pre.Cells(r, 6).value)
+            it.setHsCode(self.pre.Cells(r, 8).value)
+            it.setCustomsValue(self.pre.Cells(r,16).value)
+            it.setAdValorem(self.pre.Cells(r,18).value)
+            it.setSafeguard(self.pre.Cells(r,20).value)
+            it.setFodinfa(self.pre.Cells(r,22).value)
+            it.setVat(self.pre.Cells(r,26).value)
+            it.setTotalTax(self.pre.Cells(r,27).value)
+
+            if it.description is None:
+                continue
+
+            self.items.append(it)
 
 
         #print "range start: {}, range end {}".format(rstart,rend)
