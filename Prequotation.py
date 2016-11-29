@@ -1,7 +1,7 @@
 import re
 from win32com import client
 from Item import Item
-from Database import Database
+import Database
 
 class Prequotation:
 
@@ -10,7 +10,6 @@ class Prequotation:
         xl.Visible = True
 
         self.items = []
-        self.database = Database()
         self.workbook = xl.Workbooks.Open(pathToFile)
         self.englishSheet = xl.Sheets("English")
         self.pre = xl.Sheets("Pre-Liquidacion Parcial x Items")
@@ -62,24 +61,25 @@ class Prequotation:
             it.setVat(self.pre.Cells(r,26).value)
             it.setTotalTax(self.pre.Cells(r,27).value)
 
+            #if there is no description, this is not a valid item
             if it.description is None:
                 continue
 
 
             #find the hs code according to huawei
             if it.model:
-                huaweiHsCode = self.database.queryBom(it.model)
+                huaweiHsCode = Database.queryBom(it.model)
                 it.setHsCodeHuawei(huaweiHsCode)
 
 
             #find torres y torres hs code tariffs
-            ###########################################aqui me quede ##############################
-            cursor = self.database.queryHS(it.hscode)
+            cursor = Database.queryHS(it.hscode)
+
             if cursor.count() > 0:
-                adv = float(cursor[0]["Ad Valorem"])
-                fod = float(cursor[0]["Fodinfa"])
-                vat = float(cursor[0]["VAT"])
-                saf = float(cursor[0]["Safeguard"])
+                adv = float(cursor[0]["Ad Valorem"].replace("%", ""))/100.00
+                fod = float(cursor[0]["Fodinfa"].replace("%", ""))/100.00
+                vat = float(cursor[0]["VAT"].replace("%", ""))/100.00
+                saf = float(cursor[0]["Safeguard"].replace("%", ""))/100.00
 
                 it.setAdValoremPercentage(adv)
                 it.setFodindaPercentage(fod)
@@ -91,10 +91,6 @@ class Prequotation:
             self.items.append(it)
 
 
-            #print "range start: {}, range end {}".format(rstart,rend)
-
-
-
     def rageStart(self):
         pattern = re.compile("Producto")
         for cel in self.pre.Usedrange:
@@ -104,7 +100,7 @@ class Prequotation:
                 continue
 
             if pattern.search(cel.value):
-                return cel.Row
+                return cel.Row + 1
 
     def rangeEnd(self):
         pattern = re.compile("SON:")
@@ -126,9 +122,40 @@ class Prequotation:
         summary.Cells(1,6).value = "total tax tt"
         summary.Cells(1,7).value = "total tax huawei"
 
+        r = 2 #first row number
+        i = 1 #item number
+        ttTaxTotal = float(0.00)
+        hwTaxTotal = float(0.00)
+
+        for item in self.items:
+            summary.Cells(r, 1).Value = i
+            summary.Cells(r, 2).Value = item.model
+            summary.Cells(r, 3).Value = item.description
+            summary.Cells(r, 4).Value = item.hscode
+            summary.Cells(r, 5).Value = item.hsCodeHuawei
+            summary.Cells(r, 6).Value = item.totalTax
+            summary.Cells(r, 7).Value = item.autoCalculatedTax
+
+            #some formatting
+            summary.Cells(r, 7).Numberformat = "$#,##0.00_);($#,##0.00)"
+            summary.Cells(r, 3).Numberformat = "General"
+            summary.Cells(r, 5).Numberformat = "General"
+
+            ttTaxTotal += float(item.totalTax)
+            hwTaxTotal += float(item.autoCalculatedTax)
+            r+=1
+            i+=1
+
+        summary.Cells(r+2, 1).value = "Total TT"
+        summary.Cells(r+2, 2).value = ttTaxTotal
+        summary.Cells(r+2, 2).Numberformat = "$#,##0.00_);($#,##0.00)"
+
+        summary.Cells(r+3, 1).value = "Total HW"
+        summary.Cells(r+3, 2).value = hwTaxTotal
+        summary.Cells(r+3, 2).Numberformat= "$#,##0.00_);($#,##0.00)"
 
 if __name__ == "__main__":
-    prequotation = Prequotation("D:/myScripts/prequotator/Orden 2016-TA-03149.xls")
+    prequotation = Prequotation("D:/myScripts/prequotator/error sin salvaguardia Orden 2016-TQ-01694.xls")
 
     print prequotation.customsValue
     print prequotation.adValorem
@@ -137,5 +164,8 @@ if __name__ == "__main__":
     print prequotation.vat
     print prequotation.totalTax
     print prequotation.selfCheckTotalTax()
-    prequotation.createSummary()
     prequotation.setItems()
+    prequotation.createSummary()
+    for i in prequotation.items:
+        print vars(i)
+

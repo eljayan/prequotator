@@ -1,30 +1,24 @@
 from pymongo import MongoClient
 
-class Database:
-
-    def __int__(self):
-        self.client = MongoClient ("10.192.69.41")
-        self.db = self.client.supplyChain
-        self.bomhs = self.db.bomHS
-        self.hs = self.db.HS
-
-    def queryBom(self, bom):
-        '''returns the hs code'''
-        cursor = self.hs.find({"Part Number":bom})
-        if cursor.count() > 0:
-            return cursor[0]["HS Code"]
-        return "not found"
-
-    def queryHS(self, hs):
-        return
+client = MongoClient ("10.192.69.41")
+db = client.get_database("supplyChain")
+bomhscollection = db.get_collection("bomHS")
+hscollection = db.get_collection("HS")
 
 
-class Query:
-    def __int__(self):
-        self.adValoremPercentage = None
-        self.fodinfaPercentage = None
-        self.safeguardPercentage = None
-        self.vatPercentage = None
-        self.hsCode = None
+def queryBom(bom):
+    '''returns the hs code'''
+    cursor = bomhscollection.find({"Part Number":bom})
 
+    if cursor.count() > 0:
+        return cursor[0]["HS Code"]
+    return "not found"
+
+
+def queryHS(hs):
+    '''retruns mongo cursor object'''
+    cursor = hscollection.find({"HS Code":hs})
+    if cursor.count() > 0:
+        return cursor
+    return
 

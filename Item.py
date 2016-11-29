@@ -58,17 +58,20 @@ class Item:
     def setTotalTax(self, value):
         self.totalTax = value
 
-    def setAutocalculatedTax(self, value):
+    def setAutoCalculatedTax(self, value):
         self.autoCalculatedTax = value
 
     def autocalculate(self):
-        customsValue = self.customsValue
-        adValorem = customsValue * self.adValoremPercentage
-        fodinfa = customsValue * self.fodinfaPercentage
-        safeguard = customsValue * self.fodinfaPercentage
-        vat = (customsValue+adValorem+fodinfa+safeguard) * self.vatPercentage
-        self.setAutoCalculatedTax(adValorem+fodinfa+safeguard+vat)
-
+        '''autocalculates taxes according to Hs code provided by T&T'''
+        try:
+            customsValue = float(self.customsValue)
+            adValorem = customsValue * self.adValoremPercentage
+            fodinfa = customsValue * self.fodinfaPercentage
+            safeguard = customsValue * self.safeguardPercentage
+            vat = (customsValue+adValorem+fodinfa+safeguard) * self.vatPercentage
+            self.setAutoCalculatedTax(adValorem+fodinfa+safeguard+vat)
+        except:
+            self.setAutoCalculatedTax(0)
 
 
 
