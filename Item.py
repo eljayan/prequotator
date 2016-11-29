@@ -1,15 +1,20 @@
 
 class Item:
 
-    description
-    model
-    hscode
-    customsValue
-    adValorem
-    fodinfa
-    safeguard
-    vat
-    totalTax
+    def __int__(self):
+        self.description = None
+        self.model =None
+        self.hscode =None
+        self.hsCodeHuawei = None
+        self.customsValue = None
+        self.adValorem = None
+        self.adValoremPercentage = None
+        self.fodinfa =None
+        self.fodinfaPercentage = None
+        self.vat = None
+        self.vatPercentage = None
+        self.safeguard = None
+        self.safeguardPercentage = None
 
     def setDescription(self, value):
         self.description = value
@@ -19,6 +24,9 @@ class Item:
 
     def setHsCode(self, value):
         self.hscode = value
+
+    def setHsCodeHuawei(self, value):
+        self.hsCodeHuawei = value
 
     def setCustomsValue(self, value):
         self.customsValue = value
@@ -50,13 +58,16 @@ class Item:
     def setTotalTax(self, value):
         self.totalTax = value
 
+    def setAutocalculatedTax(self, value):
+        self.autoCalculatedTax = value
+
     def autocalculate(self):
         customsValue = self.customsValue
         adValorem = customsValue * self.adValoremPercentage
         fodinfa = customsValue * self.fodinfaPercentage
         safeguard = customsValue * self.fodinfaPercentage
         vat = (customsValue+adValorem+fodinfa+safeguard) * self.vatPercentage
-        return adValorem+fodinfa+safeguard+vat
+        self.setAutoCalculatedTax(adValorem+fodinfa+safeguard+vat)
 
 
 

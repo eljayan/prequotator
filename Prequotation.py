@@ -2,14 +2,15 @@ import re
 from win32com import client
 from Item import Item
 from Database import Database
+
 class Prequotation:
-
-    items = []
-
 
     def __init__(self, pathToFile):
         xl = client.Dispatch("Excel.Application")
         xl.Visible = True
+
+        self.items = []
+        self.database = Database()
         self.workbook = xl.Workbooks.Open(pathToFile)
         self.englishSheet = xl.Sheets("English")
         self.pre = xl.Sheets("Pre-Liquidacion Parcial x Items")
@@ -52,6 +53,7 @@ class Prequotation:
         for r in range(rstart, rend):
             it = Item()
             it.setModel(self.pre.Cells(r, 6).value)
+            it.setDescription(self.pre.Cells(r,3).value)
             it.setHsCode(self.pre.Cells(r, 8).value)
             it.setCustomsValue(self.pre.Cells(r,16).value)
             it.setAdValorem(self.pre.Cells(r,18).value)
@@ -63,10 +65,33 @@ class Prequotation:
             if it.description is None:
                 continue
 
+
+            #find the hs code according to huawei
+            if it.model:
+                huaweiHsCode = self.database.queryBom(it.model)
+                it.setHsCodeHuawei(huaweiHsCode)
+
+
+            #find torres y torres hs code tariffs
+            ###########################################aqui me quede ##############################
+            cursor = self.database.queryHS(it.hscode)
+            if cursor.count() > 0:
+                adv = float(cursor[0]["Ad Valorem"])
+                fod = float(cursor[0]["Fodinfa"])
+                vat = float(cursor[0]["VAT"])
+                saf = float(cursor[0]["Safeguard"])
+
+                it.setAdValoremPercentage(adv)
+                it.setFodindaPercentage(fod)
+                it.setVatPercentage(vat)
+                it.setSafeguardPercentage(saf)
+
+                it.autocalculate()
+
             self.items.append(it)
 
 
-        #print "range start: {}, range end {}".format(rstart,rend)
+            #print "range start: {}, range end {}".format(rstart,rend)
 
 
 
@@ -103,7 +128,7 @@ class Prequotation:
 
 
 if __name__ == "__main__":
-    prequotation = Prequotation("D:/myScripts/prequotator/Orden 2016-TQ-01735.xls")
+    prequotation = Prequotation("D:/myScripts/prequotator/Orden 2016-TA-03149.xls")
 
     print prequotation.customsValue
     print prequotation.adValorem
