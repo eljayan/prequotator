@@ -146,13 +146,18 @@ class Prequotation:
             r+=1
             i+=1
 
-        summary.Cells(r+2, 1).value = "Total TT"
+        summary.Cells(r+2, 1).value = "Total TT:"
         summary.Cells(r+2, 2).value = ttTaxTotal
         summary.Cells(r+2, 2).Numberformat = "$#,##0.00_);($#,##0.00)"
 
-        summary.Cells(r+3, 1).value = "Total HW"
+        summary.Cells(r+3, 1).value = "Total HW:"
         summary.Cells(r+3, 2).value = hwTaxTotal
         summary.Cells(r+3, 2).Numberformat= "$#,##0.00_);($#,##0.00)"
+
+        summary.Cells(r+4, 1).value = "Prequotation amount:"
+        summary.Cells(r+4, 2).value = hwTaxTotal-10.00
+        summary.Cells(r+4, 2).Numberformat= "$#,##0.00_);($#,##0.00)"
+        
 
 if __name__ == "__main__":
     prequotation = Prequotation("D:/myScripts/prequotator/error sin salvaguardia Orden 2016-TQ-01694.xls")
