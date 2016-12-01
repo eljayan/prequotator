@@ -16,6 +16,7 @@ def main(filename):
 if __name__ == '__main__':
     try:
         f = argv[1]
+        # f = "D:/myScripts/prequotator/Orden 2016-TA-03116.xls"
         main(f)
     except:
         print_exc()

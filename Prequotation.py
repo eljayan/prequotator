@@ -15,6 +15,7 @@ class Prequotation:
         self.pre = xl.Sheets("Pre-Liquidacion Parcial x Items")
 
         self.setCustomsValue()
+        self.setAutoCustomsValue()
         self.setAdvalorem()
         self.setFodinfa()
         self.setSafeguard()
@@ -24,6 +25,39 @@ class Prequotation:
 
     def setCustomsValue(self):
         self.customsValue = self.englishSheet.Cells(31,6).value
+
+    def setAutoCustomsValue(self):
+        pls = self.parsePL()
+        if not pls:
+            self.autoCustomsValue = 0.00
+            return
+
+        for pl in pls:
+            cursor = Database.queryPL(pl.strip())
+            if cursor:
+                fob = cursor[0]["fob"]
+                freight = cursor[0]["freight"]
+                insurance = cursor[0]["insurance"]
+                total_amount = cursor[0]["total_amount"]
+                ipNumber = cursor[0]["insurance_application"]
+                if not ipNumber or ipNumber == "None":
+                    presuntiveInsurance = (fob+freight)*0.01
+                else:
+                    presuntiveInsurance = 0
+
+                self.autoCustomsValue = total_amount+presuntiveInsurance
+                return
+
+    def parsePL(self):
+        '''returns a list'''
+        pls = self.englishSheet.Cells(11,4).Value
+
+        if not pls:
+            return
+
+        pls = pls.replace("/", " ")
+        pls = pls.split()
+        return pls
 
     def setAdvalorem(self):
         self.adValorem = self.englishSheet.Cells(51,6).value
@@ -146,17 +180,26 @@ class Prequotation:
             r+=1
             i+=1
 
-        summary.Cells(r+2, 1).value = "Total TT:"
-        summary.Cells(r+2, 2).value = ttTaxTotal
+        summary.Cells(r+2, 1).value = "Customs Value TT:"
+        summary.Cells(r+2, 2).value = self.customsValue
         summary.Cells(r+2, 2).Numberformat = "$#,##0.00_);($#,##0.00)"
 
-        summary.Cells(r+3, 1).value = "Total HW:"
-        summary.Cells(r+3, 2).value = hwTaxTotal
-        summary.Cells(r+3, 2).Numberformat= "$#,##0.00_);($#,##0.00)"
+        summary.Cells(r+3, 1).value = "Customs Value HW:"
+        summary.Cells(r+3, 2).value = self.autoCustomsValue
+        summary.Cells(r+3, 2).Numberformat = "$#,##0.00_);($#,##0.00)"
 
-        summary.Cells(r+4, 1).value = "Prequotation amount:"
-        summary.Cells(r+4, 2).value = hwTaxTotal-10.00
-        summary.Cells(r+4, 2).Numberformat= "$#,##0.00_);($#,##0.00)"
+
+        summary.Cells(r+4, 1).value = "Total Prequotation TT:"
+        summary.Cells(r+4, 2).value = ttTaxTotal
+        summary.Cells(r+4, 2).Numberformat = "$#,##0.00_);($#,##0.00)"
+
+        summary.Cells(r+5, 1).value = "Total Prequotation HW:"
+        summary.Cells(r+5, 2).value = hwTaxTotal
+        summary.Cells(r+5, 2).Numberformat= "$#,##0.00_);($#,##0.00)"
+
+        summary.Cells(r+6, 1).value = "Prequotation amount:"
+        summary.Cells(r+6, 2).value = hwTaxTotal-10.00
+        summary.Cells(r+6, 2).Numberformat= "$#,##0.00_);($#,##0.00)"
         
 
 if __name__ == "__main__":

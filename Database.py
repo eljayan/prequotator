@@ -4,6 +4,7 @@ client = MongoClient ("10.192.69.41")
 db = client.get_database("supplyChain")
 bomhscollection = db.get_collection("bomHS")
 hscollection = db.get_collection("HS")
+common = db.get_collection("commonRegimes")
 
 
 def queryBom(bom):
@@ -22,3 +23,10 @@ def queryHS(hs):
         return cursor
     return
 
+
+def queryPL(pl):
+    '''returns cursor object'''
+    cursor = common.find({"pl_number":{"$regex":pl}})
+    if cursor.count()>0:
+        return cursor
+    return
