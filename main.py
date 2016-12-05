@@ -10,6 +10,7 @@ def main(filename):
         print "Front math check failed"
 
     p.setItems()
+    p.formatTotalCell()
     p.createSummary()
     print "process finished."
 
@@ -20,5 +21,5 @@ if __name__ == '__main__':
         main(f)
     except:
         print_exc()
-    finally:
-        raw_input("")
+        raw_input(" ")
+    

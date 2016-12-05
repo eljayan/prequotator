@@ -76,8 +76,8 @@ class Prequotation:
         self.totalTax = self.englishSheet.Cells(62,6).value
 
     def selfCheckTotalTax(self):
-        autosum = self.adValorem+self.fodinfa+self.safeguard+self.vat
-        return autosum == self.totalTax
+        autosum = float(self.adValorem)+float(self.fodinfa)+float(self.safeguard)+float(self.vat)
+        return autosum == float(self.totalTax)
 
 
     def setItems(self):
@@ -200,7 +200,12 @@ class Prequotation:
         summary.Cells(r+6, 1).value = "Prequotation amount:"
         summary.Cells(r+6, 2).value = hwTaxTotal-10.00
         summary.Cells(r+6, 2).Numberformat= "$#,##0.00_);($#,##0.00)"
-        
+
+    def formatTotalCell(self):
+        #the rgb function of vba returns an integer
+        for r in range(62, 64):
+            for c in range(3,8):
+                self.englishSheet.Cells(r,c).Interior.Color = 15792895
 
 if __name__ == "__main__":
     prequotation = Prequotation("D:/myScripts/prequotator/error sin salvaguardia Orden 2016-TQ-01694.xls")
